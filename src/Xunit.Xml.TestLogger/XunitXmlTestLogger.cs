@@ -227,7 +227,7 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
                 results = new List<TestResultInfo>();
             }
 
-            var doc = new XDocument(CreateAssembliesElement(resultList));
+            var doc = new XDocument(CreateAssembliesElement(resultList, e.ElapsedTimeInRunningTests));
 
             // Create directory if not exist
             var loggerFileDirPath = Path.GetDirectoryName(outputFilePath);
@@ -245,20 +245,20 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
             Console.WriteLine(resultsFileMessage);
         }
 
-        private XElement CreateAssembliesElement(List<TestResultInfo> results)
+        private XElement CreateAssembliesElement(List<TestResultInfo> results, TimeSpan totalExecutionTime)
         {
             var element = new XElement("assemblies",
                 from result in results
                 group result by result.AssemblyPath into resultsByAssembly
                 orderby resultsByAssembly.Key
-                select CreateAssemblyElement(resultsByAssembly));
+                select CreateAssemblyElement(resultsByAssembly, totalExecutionTime));
 
             element.SetAttributeValue("timestamp", localStartTime.ToString(CultureInfo.InvariantCulture));
 
             return element;
         }
 
-        private XElement CreateAssemblyElement(IGrouping<string, TestResultInfo> resultsByAssembly)
+        private XElement CreateAssemblyElement(IGrouping<string, TestResultInfo> resultsByAssembly, TimeSpan totalExecutionTime)
         {
             List<TestResultInfo> testResultAsError = new List<TestResultInfo>();
             var assemblyPath = resultsByAssembly.Key;
@@ -273,7 +273,6 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
             int failed = 0;
             int skipped = 0;
             int errors = 0;
-            var time = TimeSpan.Zero;
 
             var element = new XElement("assembly");
             XElement errorsElement = new XElement("errors");
@@ -286,7 +285,6 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
                 failed += collection.failed;
                 skipped += collection.skipped;
                 errors += collection.error;
-                time += collection.time;
 
                 element.Add(collection.element);
             }
@@ -322,7 +320,7 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
             element.SetAttributeValue("passed", passed);
             element.SetAttributeValue("failed", failed);
             element.SetAttributeValue("skipped", skipped);
-            element.SetAttributeValue("time", time.TotalSeconds.ToString("N3", CultureInfo.InvariantCulture).Replace(",", ""));
+            element.SetAttributeValue("time", totalExecutionTime.TotalSeconds.ToString("N3", CultureInfo.InvariantCulture).Replace(",", ""));
             element.SetAttributeValue("errors", errors);
 
             return element;
