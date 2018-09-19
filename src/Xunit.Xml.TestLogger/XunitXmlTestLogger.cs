@@ -322,7 +322,7 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
             element.SetAttributeValue("passed", passed);
             element.SetAttributeValue("failed", failed);
             element.SetAttributeValue("skipped", skipped);
-            element.SetAttributeValue("time", time.TotalSeconds.ToString("N3", CultureInfo.InvariantCulture));
+            element.SetAttributeValue("time", time.TotalSeconds.ToString("N3", CultureInfo.InvariantCulture).Replace(",", ""));
             element.SetAttributeValue("errors", errors);
 
             return element;
@@ -410,7 +410,7 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
             element.SetAttributeValue("failed", failed);
             element.SetAttributeValue("skipped", skipped);
             element.SetAttributeValue("name", $"Test collection for {resultsByType.Key}");
-            element.SetAttributeValue("time", time.TotalSeconds.ToString("N3", CultureInfo.InvariantCulture));
+            element.SetAttributeValue("time", time.TotalSeconds.ToString("N3", CultureInfo.InvariantCulture).Replace(",", ""));
 
             return (element, total, passed, failed, skipped, error, time);
         }
@@ -438,7 +438,7 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
                 new XAttribute("name", result.Name),
                 new XAttribute("type", result.Type),
                 new XAttribute("method", result.Method),
-                new XAttribute("time", result.Time.TotalSeconds.ToString("N7", CultureInfo.InvariantCulture)),
+                new XAttribute("time", result.Time.TotalSeconds.ToString("N7", CultureInfo.InvariantCulture).Replace(",", "")),
                 new XAttribute("result", OutcomeToString(result.Outcome)));
 
             StringBuilder stdOut = new StringBuilder();
@@ -533,7 +533,7 @@ namespace Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger
                     return "Pass";
 
                 case TestOutcome.Skipped:
-                    return "Skipped";
+                    return "Skip";
 
                 default:
                     return "Unknown";
